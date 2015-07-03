@@ -76,13 +76,17 @@ $chunker->setText('foo bar baz');
 
 ## Encoding
 
-Both the File and Text chunkers accept an optinoal second argument in their constructor (and provide a setter) for character encoding. The encoding can be one of the following three values:
+Both the File and Text chunkers accept an optional second argument in their constructor (and provide a setter) for character encoding. 
 
-- the name of a [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php),
-- the special string `"auto"`, meaning the encoding should be detected using [`mb_detect_encoding()`](http://php.net/manual/en/function.mb-detect-encoding.php), or 
-- `null`, meaning the encoding should be retrieved from [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php).
+Encoding can be one of the following three values:
 
-```
+- a [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php),
+- the special string `"auto"` (and the encoding will be detected with [`mb_detect_encoding()`](http://php.net/manual/en/function.mb-detect-encoding.php)), or 
+- `null` (and the encoding will be retrieved from [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php).)
+
+For example:
+
+```php
 use Jstewmc\Chunker;
 
 // set encoding via the constructor
@@ -97,7 +101,7 @@ $chunker = new Chunker\Text('foo bar baz', null);
 
 ## Size
 
-The File chunker defaults to chunks of 8,192 *bytes*, and the Text chunker defaults to chunks of 2,000 *characters*. But, you can set the chunker's chunk size with the `setSize()` method. Just keep in mind, the `size` property of a File chunker is in *bytes*, and the `size` property of a Text chunker is in *characters*:
+The File chunker defaults to chunks of 8,192 *bytes*, and the Text chunker defaults to chunks of 2,000 *characters*. But, you can set the chunker's chunk size with the `setSize()` method. Just keep in mind, the `size` property of a File chunker is in bytes, and the `size` property of a Text chunker is in characters:
 
 ```php
 use Jstewmc\Chunker;
@@ -111,20 +115,22 @@ $chunker->setSize(8192);  // 8192 characters (i.e, 8 - 32 kilobytes) !!
 
 ## Usage
 
-Once your chunker has been constructed, you can get the current, next, or previous chunk with the `getCurrentChunk()`, `getNextChunk()`, and `getPreviousChunk()` methods, respectively. If a chunk does not exist, the methods will return false. For conveniece, the methods are aliased as `current()`, `next()`, and `previous()`, respectively.
+Once your chunker has been constructed, you can get the current, next, or previous chunk with the `getCurrentChunk()`, `getNextChunk()`, and `getPreviousChunk()` methods, respectively. If a chunk does not exist, the methods will return false. 
+
+For conveniece, the methods are aliased as `current()`, `next()`, and `previous()`, respectively.
 
 ```php
 use Jstewmc\Chunker;
 
 $chunker = Chunker\Text('foo');
-$chunker->setSize(3);
+$chunker->setSize(3);  // three characters
 
 $chunker->current();   // returns "foo"
 $chunker->next();      // returns false
 $chunker->previous();  // returns "foo"
 ```
 
-You can count the total chunks in a file or text:
+You can count the total chunks in a file or string:
 
 ```php
 use Jstewmc\Chunker;
@@ -135,7 +141,7 @@ $chunker->setSize(3);
 $chunker->getMaxChunks();  // returns 4 (total is always rounded up!)
 ```
 
-You can check if the file or text has *one* chunk with `hasChunk()` or has *one or more* chunks with `hasChunks()`:
+You can check if the file or string has *one* chunk with `hasChunk()` or has *one or more* chunks with `hasChunks()`:
 
 ```php
 use Jstewmc\Chunker;
