@@ -76,23 +76,24 @@ $chunker->setText('foo bar baz');
 
 ## Encoding
 
-A file or string's character encoding can be set explicitly via the optional second argument in the constructor. An encoding should be a valid [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php).
+A file or string's character encoding is set *explicitly* or *implicitly* when the Chunker is constructed.
 
-If a file or string's character encoding is not set explicitly in the constructer, it will be set implicitly on constructing using the value returned by  [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php).
+The character encoding can be set explicitly via the optional second argument in the constructor. An encoding should be a valid [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php).
 
-If, after construction, you'd like to see the chunker's encoding, you can use the `setEncoding()` method:
+If a character encoding is not passed to the constructer, the Chunker's encoding will be set implicitly to the encoding returned by [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php).
 
+If, after construction, you'd like to set the chunker's encoding, you can use the `setEncoding()` method:
 
 ```php
 use Jstewmc\Chunker;
 
-// set the string or file's encoding explicitly
+// set the encoding explicitly
 $chunker = new Chunker\Text('foo bar baz', 'UTF-8');
 
-// set the string or file's encoding implicitly
+// set the encoding implicitly
 $chunker = new Chunker\Text('foo bar baz');
 
-// set the string of file's encoding explicitly (after construction)
+// set the string of file's after construction
 $chunker->setEncoding('UTF-8');
 ```
 
