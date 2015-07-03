@@ -183,6 +183,17 @@ abstract class Chunker
 	/* !Public methods */
 	
 	/**
+	 * Alias for the getCurrentChunk() method
+	 *
+	 * @return  string|false
+	 * @since  0.1.0
+	 */
+	public function current()
+	{
+		return $this->getCurrentChunk();
+	}
+	
+	/**
 	 * Returns the current chunk
 	 *
 	 * @return  string|false
@@ -273,6 +284,28 @@ abstract class Chunker
 	public function hasPreviousChunk()
 	{
 		return $this->index - 1 >= 0;
+	}
+	
+	/**
+	 * Alias for the getNextChunk() method
+	 *
+	 * @return  string|false
+	 * @since  0.1.0
+	 */
+	public function next()
+	{
+		return $this->getNextChunk();
+	}
+	
+	/**
+	 * Alias for the getPreviousChunk() method
+	 *
+	 * @return  string|false
+	 * @since  0.1.0
+	 */
+	public function previous()
+	{
+		return $this->getPreviousChunk();
 	}
 	
 	/**
