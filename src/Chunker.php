@@ -22,7 +22,7 @@ abstract class Chunker
 	/* !Protected properties */
 	
 	/**
-	 * @var  string|null  the chunker's character encoding
+	 * @var  string  the chunker's character encoding
 	 * @since  0.1.0
 	 */
 	protected $encoding;
@@ -45,7 +45,7 @@ abstract class Chunker
 	/**
 	 * Returns the chunker's character-set encoding
 	 *
-	 * @return  string|null
+	 * @return  string
 	 * @since  0.1.0
 	 */
 	public function getEncoding()
@@ -81,28 +81,18 @@ abstract class Chunker
 	/**
 	 * Sets the chunker's character encoding
 	 *
-	 * @param  string|null  $encoding  the chunker's character encoding; the string
-	 *     'auto' to detect encoding; or null to use mb_internal_encoding()
-	 * @returne  self
+	 * @param  string|null  $encoding  the chunker's character encoding
 	 * @throws  InvalidArgumentException  if $encoding is not an supported charset;
 	 *     the special string 'auto'; or, null
 	 * @since  0.1.0
 	 */
-	public function setEncoding($encoding = null)
+	public function setEncoding($encoding)
 	{
-		if ( 
-			! (is_string($encoding) && in_array($encoding, mb_list_encodings()))
-			&& ! (is_string($encoding) && $encoding === 'auto')
-			&& $encoding !== null
-		) {
+		if ( ! is_string($encoding) || ! in_array($encoding, mb_list_encodings())) {
 			throw new \InvalidArgumentException(
-				__METHOD__."() expects parameter one, encoding, to be a valid string "
-				 . "character encoding name; the special string 'auto'; or, null"
+				__METHOD__."() expects parameter one, encoding, to be a valid "
+				 . "character encoding name"
 			);
-		}
-		
-		if ($encoding === 'auto') {
-			$encoding = $this->detectEncoding();
 		}
 		
 		$this->encoding = $encoding;
@@ -162,20 +152,21 @@ abstract class Chunker
 	/**
 	 * Called when the object is constructed
 	 *
-	 * @param  string  $encoding  the chunker's character encoding (possible values
-	 *     are a string character encoding name; the special string 'auto' to 
-	 *     detect the string's encoding; or, null, to use mb_internal_encoding())
+	 * @param  string  $encoding  the chunker's character encoding (optional; if
+	 *     omitted, defaults to mb_internal_encoding())
 	 * @return  self
 	 * @throws  InvalidArgumentException  if $encoding is neither null nor a valid
 	 *     mb-supported character encoding
 	 * @since  0.1.0
 	 */
 	public function __construct($encoding = null) 
-	{
-		if ($encoding !== null) {
-			$this->setEncoding($encoding);
+	{	
+		if ($encoding === null) {
+			$encoding = mb_internal_encoding();		
 		}
-		
+
+		$this->setEncoding($encoding);
+				
 		return;	
 	}
 	
@@ -323,13 +314,6 @@ abstract class Chunker
 	
 	
 	/* !Protected methods */
-	
-	/**
-	 * Detects the file or string's character encoding
-	 *
-	 * @return  string|null
-	 */
-	abstract protected function detectEncoding();
 	
 	/**
 	 * Gets a chunk starting at $offset

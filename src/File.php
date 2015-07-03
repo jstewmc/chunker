@@ -97,9 +97,8 @@ class File extends Chunker
 	 *
 	 * @param  string  $name  the file's name (optional; if omitted, defaults to 
 	 *     null)
-	 * @param  string  $encoding  the text's character encoding (possible values are
-	 *     a supported character encoding; the special string "auto" to detect the
-	 *     text's encoding; and, null to use mb_internal_encoding())
+	 * @param  string  $encoding  the text's character encoding (optional; if 
+	 *     omitted, defaults to mb_internal_encoding())
 	 * @return  self
 	 * @throws  InvalidArgumentException  if $name is neither null nor a readable 
 	 *     file name
@@ -135,27 +134,6 @@ class File extends Chunker
 	
 	
 	/* !Protected methods */
-	
-	/**
-	 * Detects the file's encoding
-	 *
-	 * I'll guess the file's encoding from the first eight kilobytes of content.
-	 * The more content we grab, the more accurate our detection, but the longer
-	 * the operation will required.
-	 *
-	 * @return  string|null
-	 */
-	public function detectEncoding()
-	{
-		$encoding = null;
-		
-		if ($this->name !== null) {
-			$snippet  = file_get_contents($this->name, false, null, 0, 8192);
-			$encoding = mb_detect_encoding($snippet);
-		}
-		
-		return $encoding;
-	}
 	
 	/**
 	 * Returns a multi-byte-safe file chunk or false
@@ -243,7 +221,7 @@ class File extends Chunker
 					$sbChunk, 
 					min(max(0, $offset), self::MAX_SIZE_CHARACTER), 
 					$this->size, 
-					$this->encoding ?: mb_internal_encoding()
+					$this->encoding
 				);	
 			} else {
 				// otherwise, a chunk does not exist

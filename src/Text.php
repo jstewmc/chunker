@@ -75,13 +75,12 @@ class Text extends Chunker
 	 *
 	 * @param  string  $text  the text to chunk (optional; if omitted, defaults to 
 	 *     null)
-	 * @param  string  $encoding  the text's character encoding (possible values are
-	 *     a supported character encoding; the special string "auto" to detect the
-	 *     text's encoding; and, null to use mb_internal_encoding())
+	 * @param  string  $encoding  the text's character encoding (optional; if
+	 *      omitted, defaults to mb_internal_encoding())
 	 * @return  self
 	 * @throws  InvalidArgumentException  if $text is neither null nor a string
 	 * @throws  InvalidArgumentException  if $encoding is neither null nor a valid
-	 *     character encoding nor the string "auto"
+	 *     character encoding
 	 * @since   0.1.0
 	 */
 	public function __construct($text = null, $encoding = null)
@@ -106,24 +105,11 @@ class Text extends Chunker
 	 */
 	public function getMaxChunks()
 	{
-		$encoding = $this->encoding ?: mb_internal_encoding();
-		$total    = mb_strlen((string) $this->text, $encoding);
-		
-		return ceil($total / $this->size);
+		return ceil(mb_strlen((string) $this->text, $this->encoding) / $this->size);
 	}
 	 
 	
 	/* !Protected methods */
-	
-	/**
-	 * Returns the text's encoding
-	 *
-	 * @return  string
-	 */
-	protected function detectEncoding()
-	{
-		return mb_detect_encoding((string) $this->text);
-	}
 	
 	/**
 	 * Returns a string chunk or false if chunk does not exist
@@ -147,12 +133,7 @@ class Text extends Chunker
 		$text = (string) $this->text;
 		
 		if ($offset < mb_strlen($text)) {
-			$chunk = mb_substr(
-				$text, 
-				$offset, 
-				$this->size, 
-				$this->encoding ?: mb_internal_encoding()
-			);
+			$chunk = mb_substr($text, $offset, $this->size, $this->encoding);
 		} 
 		
 		return $chunk;
