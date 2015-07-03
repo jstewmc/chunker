@@ -209,4 +209,6 @@ This library is released under the [MIT license](https://github.com/jstewmc/chun
 
 ## Version
 
-0.1.0
+### dev-master
+
+Mostly finished work-in-progress.
