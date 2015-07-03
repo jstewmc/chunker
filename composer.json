@@ -1,0 +1,21 @@
+{
+	"name": "jstewmc/chunker",
+	"description": "Chunk a very large file or string with PHP (multi-byte safe)",
+	"license": "MIT",
+	"keywords": ["PHP", "chunk", "file", "string", "multi-byte"],
+	"authors": [
+		{
+			"name": "Jack Clayton",
+			"email": "clayjs0@gmail.com"	
+		}
+	],
+	"require": {},
+	"require-dev": {
+		"phpunit/phpunit": "4.2.*"
+	},
+	"autoload": {
+		"psr-4": {
+			"Jstewmc\\Chunker\\": "src/"
+		}
+	}
+}
