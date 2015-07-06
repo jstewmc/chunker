@@ -116,7 +116,7 @@ $chunker->setSize(2000);  // that's 2000 characters (i.e., up to 8 kilobytes)
 
 ## Usage
 
-Once your chunker has been constructed, you can get the chunker's current, next, or previous chunk with the `getCurrentChunk()`, `getNextChunk()`, and `getPreviousChunk()` methods, respectively. For conveniece, the methods are aliased as `current()`, `next()`, and `previous()`, respectively. If a chunk does not exist, the methods will return false.
+Once your chunker has been constructed, you can get the chunker's current, next, or previous chunk with the `getCurrentChunk()`, `getNextChunk()`, and `getPreviousChunk()` methods, respectively. For convenience, the methods are aliased as `current()`, `next()`, and `previous()`, respectively. If a chunk does not exist, the methods will return false.
 
 ```php
 use Jstewmc\Chunker;
@@ -209,6 +209,6 @@ This library is released under the [MIT license](https://github.com/jstewmc/chun
 
 ## Version
 
-### dev-master
+### Version 0.1.0
 
-Mostly finished work-in-progress.
+Initial release
