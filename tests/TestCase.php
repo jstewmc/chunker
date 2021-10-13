@@ -29,7 +29,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     // Don't include type here, or it'll throw an exception: `Error: Typed
     // property must not be accessed before initialization`
     protected $systemEncoding;
-    
+
 
     protected function setUp(): void
     {
@@ -95,6 +95,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     private function unsetSystemEncoding(): void
     {
-        mb_internal_encoding($this->systemEncoding);
+		// If the encoding is empty (as has happened on CircleCI's
+		// 7.4-node-browbsers image), short-circuit.
+		if (!$this->systemEncoding) {
+			return;
+		}
+
+		mb_internal_encoding($this->systemEncoding);
     }
 }
