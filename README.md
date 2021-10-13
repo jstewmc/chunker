@@ -1,176 +1,220 @@
 # Chunker
-Chunk a large file or string with PHP (multi-byte safe).
+
+_A multi-byte-safe stream for reading very large files (or strings) as sequential chunks with PHP._
+
+Breaking very large files or string into chunks and reading them one-at-a-time (aka, "chunking") can reduce memory consumption.
+
+Unfortunately, chunking multi-byte-encoded files, like those using `UTF-8`, can result in broken multi-byte characters. PHP's file functions, like `file_get_contents()`, use limits in bytes. When the limit falls in the middle of a multi-type character, a malformed byte sequence, represented by the `"?"` character, will result:
 
 ```php
-use Jstewmc\Chunker;
+// Create an example file with multi-byte characters (characters in the string
+// "from $ to " are one-byte in UTF-8, while the euro symbol, "€", is a three-
+// byte character in UTF-8)
+file_put_contents('example.txt', 'from $ to €');
 
-// create an example file with the mixed-byte string "from $ to €"
-// keep in mind, every character in the string "from $ to " is one-byte in UTF-8; 
-//     however, the euro symbol, "€", is a three-byte character in UTF-8
-//
-file_put_contents('example.txt', "from $ to €");
+// Read 12 bytes of the file.
+$length = 12;
 
-// create a file chunker
-$chunker = new Chunker\File('example.txt');
+echo file_get_contents('example.txt', false, null, 0, $length);
+```
 
-// for this example, give the chunker a chunk size of four bytes
-// obviously, this wouldn't be worth very much in the real world!
-//
-$chunker->setSize(4);
+The example above would produce the following output:
 
-// loop through the file's chunks
-while (false !== ($chunk = $chunker->getCurrentChunk())) {
-	// echo the chunk's contents
-	echo "\"$chunk\"";
-	// advance to the next chunk
-	$chunker->getNextChunk();	
+```
+from $ to ?
+```
+
+The `"?"` appears, because 12-bytes worth of the example file's content lands in the middle of the three-byte euro symbol. This results in a malformed byte sequence, which PHP represents with the `"?"` character.
+
+This library chunks very large files (and strings) in a multi-byte-safe way. It adjusts the chunk size slightly to ensure a well-formed byte sequence each time:
+
+```php
+use Jstewmc\Chunker\Text;
+
+// Instantiate a new text chunker with UTF-8 encoding and a chunk size of four
+// bytes (these constructor arguments are covered in more detail below).
+$chunker = new Text('from $ to €', 'UTF-8', 4);
+
+// Loop through the file's chunks, echo the chunk, and advance to the next one.
+while (false !== ($chunk = $chunker->current())) {
+	echo "'$chunk'";
+	$chunker->next();
 }
 ```
 
 The example above would produce the following output:
 
 ```
-"from"
-" $ t"
-"o "
-"€"
+'from'
+' $ t'
+'o '
+'€'
 ```
 
-Note, the third chunk is only two one-byte characters. The fourth byte in the third chunk fell in the middle of the three-byte euro symbol. As a result, the third chunk was shortened. 
+Notice, the third chunk is only two one-byte characters, and the last chunk is a single three-byte character.
 
-## About
+## Installation
 
-Most of PHP's file functions like `file_get_contents()`, `fgetc()`, and `fread()` still assume that one byte is one character. In a multi-byte encoding like [UTF-8](https://en.wikipedia.org/wiki/UTF-8), that assupmtion is no longer valid. `file_get_contents()` could return a valid string from a file just as easily as it could split a multi-byte character in two and trail a malformed byte sequence.
+## Installation
 
-This library was built to chunk a very large file or very large string in a multi-byte safe way.
+This library requires [PHP 7.4+](https://secure.php.net).
 
-## Files
+It is multi-platform, and we strive to make it run equally well on Windows, Linux, and OSX.
 
-You can use the constructor or setter to set a File chunker's filename:
+It should be installed via [Composer](https://getcomposer.org). To do so, add the following line to the `require` section of your `composer.json` file, and run `composer update`:
 
-```php
-use Jstewmc\Chunker;
-
-// use the constructor
-$chunker = new Chunker\File('path/to/file');
-
-// use the setter
-$chunker = new Chunker\File();
-$chunker->setName('path/to/file');
+```javascript
+{
+   "require": {
+       "jstewmc/chunker": "^0.2"
+   }
+}
 ```
 
-## Strings
+## Instantiating a chunker
 
-You can use the constructor or setter to set a Text chunker's string:
+There are two types of chunkers: _file_ and _text_.
+
+### Instantiating a _file_ chunker
+
+You can instantiate a `File` chunker using a file pathname:
 
 ```php
-use Jstewmc\Chunker;
+use Jstewmc\Chunker\File;
 
-// use the constructor
+$chunker = new File('path/to/file.ext');
+```
+
+### Instantiating a _text_ chunker
+
+You can instantiate a `Text` chunker using a string:
+
+```php
+use Jstewmc\Chunker\Text;
+
 $chunker = new Chunker\Text('foo bar baz');
-
-// use the setter
-$chunker = new Chunker\Text();
-$chunker->setText('foo bar baz');
 ```
 
-## Encoding
+## Setting the character encoding
 
-A file or string's character encoding is set *explicitly* or *implicitly* when the Chunker is constructed.
+A file or string's character encoding lets PHP know how to understand its contents.
 
-The character encoding can be set explicitly via the optional second argument in the constructor. An encoding should be a valid [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php).
+You can set the file (or string's) character encoding *explicitly* - using the chunker's constructor argument - or you can let this library set it *implicitly* - using your application's internal character encoding.
 
-If a character encoding is not passed to the constructer, the Chunker's encoding will be set implicitly to the encoding returned by [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php).
+### Setting character encoding _explicitly_
 
-If, after construction, you'd like to set the chunker's encoding, you can use the `setEncoding()` method:
+You can use the constructor's second argument, `$encoding`, to define the file or string's character encoding explicitly. This is useful if you know the file or string differs from your application's encoding. An encoding must be a valid [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php):
 
 ```php
-use Jstewmc\Chunker;
+use Jstewmc\Chunker\Text;
 
-// set the encoding explicitly
-$chunker = new Chunker\Text('foo bar baz', 'UTF-8');
-
-// set the encoding implicitly
-$chunker = new Chunker\Text('foo bar baz');
-
-// set the string of file's after construction
-$chunker->setEncoding('UTF-8');
+$chunker = new Text('foo', 'UTF-8');
 ```
 
-## Size
+### Setting character encoding _implicitly_
 
-The File chunker defaults to a chunk size of 8,192 *bytes*, and the Text chunker defaults to a chunk size of 2,000 *characters*. 
-
-However, you can set the chunker's chunk size with the `setSize()` method. Just remember, the `size` property of a File chunker is in *bytes*, and the `size` property of a Text chunker is in *characters*:
+If an explicit character encoding is not passed to the constructer, the chunk's encoding is assumed to be your application's internal character encoding, the value returned by PHP's [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php):
 
 ```php
-use Jstewmc\Chunker;
+use Jstewmc\Chunker\Text;
 
-$chunker = new Chunker\File();
-$chunker->setSize(8192);  // 8192 bytes (i.e., 8 kilobytes)
-
-$chunker = new Chunker\Text();
-$chunker->setSize(8192);  // yikes! that's 8192 characters (i.e, up to 32 kilobytes)
-$chunker->setSize(2000);  // that's 2000 characters (i.e., up to 8 kilobytes)
+$chunker = new Text('foo');
 ```
 
-## Usage
+## Setting the chunk size
 
-Once your chunker has been constructed, you can get the chunker's current, next, or previous chunk with the `getCurrentChunk()`, `getNextChunk()`, and `getPreviousChunk()` methods, respectively. For convenience, the methods are aliased as `current()`, `next()`, and `previous()`, respectively. If a chunk does not exist, the methods will return false.
+Chunk size determines the memory consumption of each chunk, and this library attempts to provide sensible defaults: 8,192 *bytes* for files, and around 2,000 *characters* for strings (a maximum of around 8,000 bytes).
+
+If you'd like to change the chunk size, you can use the constructor's third argument, `$size` (remember, it's *bytes* for files and *characters* for text):
 
 ```php
-use Jstewmc\Chunker;
+use Jstewmc\Chunker\{File, Text};
 
-$chunker = Chunker\Text('foo');
-$chunker->setSize(3);  // three characters
+// Use chunks of 8,192 bytes.
+$chunker1 = new File('/path/to/file.ext', null, 8192);
 
-$chunker->current();   // returns "foo"
-$chunker->next();      // returns false
-$chunker->previous();  // returns "foo"
+// Use chunks of 2,000 characters.
+$chunker2 = new Text('foo bar baz', null, 2000);
 ```
 
-You can count the total chunks in a file or string:
+## Consuming the chunks
+
+Chunkers are designed to mimic a stream or array of chunks.
+
+You can use the `getCurrentChunk()` (alias, `current()`), `getNextChunk()` (alias, `next()`), and `getPreviousChunk()` (alias, `previous()`) to navigate between chunks (if a chunk does not exist, the methods will return false):
 
 ```php
-use Jstewmc\Chunker;
+use Jstewmc\Chunker\Text;
 
-$chunker = Chunker\Text('foo bar baz');
-$chunker->setSize(3);
+$chunker = new Text('foo');
 
-$chunker->getMaxChunks();  // returns 4 (total is always rounded up!)
+$chunker->getCurrentChunk();   
+// returns "foo" (the first chunk is immediately available upon instantiation)
+
+$chunker->getNextChunk();      
+// returns false (advances the internal pointer)
+
+$chunker->getPreviousChunk();  
+// returns "foo" (rewinds the internal pointer)
+
+$chunker->getCurrentChunk();   
+// returns "foo"
+
+$chunker->getCurrentChunk();   
+// returns "foo" (because the internal pointer hasn't moved)
 ```
 
-You can check if the file or string has *one* chunk with `hasChunk()` or has *one or more* chunks with `hasChunks()`:
+These methods will usually be combined in a `while` loop (keep in mind, it's important to strictly compare a chunk's value to `false`; it may return Boolean `false`, and it may also return a non-Boolean value which evaluates to `false`):
 
 ```php
-use Jstewmc\Chunker;
+while (false !== ($chunk = $chunker->current())) {
 
-$chunker = Chunker\Text();
-$chunker->setSize(3);
+	// do something with the $chunk...
 
-$chunker->setText('foo');
+	// advance the pointer for the next iteration
+	$chunker->next();
+}
+```
 
-$chunker->hasChunk();   // returns true
+You can use the `countChunks()` method to count the chunks in a file or string:
+
+```php
+use Jstewmc\Chunker\Text;
+
+$chunker = new Text('foo bar baz', null, 3);
+
+$chunker->countChunks();  // returns 4 (total is always rounded up)
+```
+
+You can use the `hasChunk()` or `hasChunks()` to see whether or not the file or string has *exactly one* chunk or has *one or more chunks*, respectively:
+
+```php
+use Jstewmc\Chunker\Text;
+
+$chunker1 = new Text('foo', null, 3);
+
+$chunker1->hasChunk();   // returns true
+$chunker1->hasChunks();  // returns true
+
+$chunker2 = new Text('foo bar', null, 3);
+
+$chunker->hasChunk();   // returns false (there are three, three-char chunks)
 $chunker->hasChunks();  // returns true
-
-$chunker->setText('foo bar');
-
-$chunker->hasChunk();   // returns false
-$chunker->hasChunks();  // returns true
 ```
 
-You can check if the file or text has a *previous* chunk with `hasPreviousChunk()` or has a *next* chunk with `hasNextChunk()`:
+You can use the `hasPreviousChunk()` or `hasNextChunk()` to see whether or not the file or string has a *previous* chunk or a *next* chunk, respectively:
 
 ```php
-use Jstewmc\Chunker;
+use Jstewmc\Chunker\Text;
 
-$chunker = Chunker\Text('foo bar');
-$chunker->setSize(3);
+$chunker = new Text('foo bar', null, 3);
 
-$chunker->hasPreviousChunk();  // returns false
+$chunker->countChunks();  // returns 3 (there are three, three-char chunks)
+
+$chunker->hasPreviousChunk();  // returns false (the pointer is at zero)
 $chunker->hasNextChunk();      // returns true
 
-$chunker->next();
+$chunker->next(); // advance to the next chunk
 
 $chunker->hasPreviousChunk();  // returns true
 $chunker->hasNextChunk();      // returns true
@@ -178,16 +222,15 @@ $chunker->hasNextChunk();      // returns true
 $chunker->next();
 
 $chunker->hasPreviousChunk();  // returns true
-$chunker->hasNextChunk();      // returns false
+$chunker->hasNextChunk();      // returns false (the pointer it at the end)
 ```
 
-Finally, you can reset the chunk's internal pointer with `reset()`:
+Finally, you can use `reset()` to reset the chunker's internal pointer to zero:
 
 ```php
-use Jstewmc\Chunker;
+use Jstewmc\Chunker\Text;
 
-$chunker = Chunker\Text('foo bar');
-$chunker->setSize(3);
+$chunker = new Text('foo bar', null, 3);
 
 $chunker->current();  // returns "foo"
 
@@ -199,16 +242,38 @@ $chunker->reset();
 $chunker->current();  // returns "foo"
 ```
 
-## Author
+## Contributing
 
-Jack Clayton - [clayjs0@gmail.com](mailto:clayjs0@gmail.com)
+Contributions are welcome!
+
+```bash
+# Clone the repository (assuming you have Git installed).
+~/path/to $ git clone git@github.com:jstewmc/chunker.git
+
+# Install dependencies (assuming you are using Composer locally).
+~/path/to/chunker $ php composer.phar install
+
+# Run the tests.
+~/path/to/chunker $ ./vendor/bin/phpunit
+
+# Create and checkout a new branch.
+~/path/to/chunker $ git branch -c YOUR_BRANCH_NAME
+
+# Make your changes...
+
+# Run the tests again.
+~/path/to/chunker $ ./vendor/bin/phpunit
+
+# Lint your changes.
+~/path/to/chunker $ ./vendor/bin/phpcs .
+
+# Fix the issues you can automatically.
+~/path/to/usps-address $ ./vendor/bin/phpcbf .
+
+# Push your changes to Github and create a pull request.
+~/path/to/chunker $ git push origin YOUR_BRANCH_NAME
+```
 
 ## License
 
 This library is released under the [MIT license](https://github.com/jstewmc/chunker/blob/master/LICENSE).
-
-## Version
-
-### Version 0.1.0
-
-Initial release
