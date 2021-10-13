@@ -95,12 +95,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     private function unsetSystemEncoding(): void
     {
-		// If the encoding is empty (as has happened on CircleCI's
-		// 7.4-node-browbsers image), short-circuit.
-		if (!$this->systemEncoding) {
-			return;
-		}
+        // If the encoding is empty (as has happened on CircleCI's
+        // 7.4-node-browbsers image), short-circuit.
+        if (!$this->systemEncoding) {
+            return;
+        }
 
-		mb_internal_encoding($this->systemEncoding);
+        mb_internal_encoding($this->systemEncoding);
     }
 }
