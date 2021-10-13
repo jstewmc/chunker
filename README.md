@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/jstewmc/chunker.svg?style=svg)](https://circleci.com/gh/jstewmc/chunker) [![codecov](https://codecov.io/gh/jstewmc/chunker/branch/master/graph/badge.svg?token=6XDlEBPQ2i)](https://codecov.io/gh/jstewmc/chunker)
+
 # Chunker
 
 _A multi-byte-safe stream for reading very large files (or strings) as sequential chunks with PHP._
