@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Fixed
+
+- Fix README's examples and improve the language a little bit.
+
 ## [0.2.0] - 2021-10-12
 
 Version `0.2.0` includes a number of breaking changes, intended to make the library easier to use and maintain.

@@ -57,8 +57,6 @@ Notice, the third chunk is only two one-byte characters, and the last chunk is a
 
 ## Installation
 
-## Installation
-
 This library requires [PHP 7.4+](https://secure.php.net).
 
 It is multi-platform, and we strive to make it run equally well on Windows, Linux, and OSX.
@@ -105,7 +103,7 @@ You can set the file (or string's) character encoding *explicitly* - using the c
 
 ### Setting character encoding _explicitly_
 
-You can use the constructor's second argument, `$encoding`, to define the file or string's character encoding explicitly. This is useful if you know the file or string differs from your application's encoding. An encoding must be a valid [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php):
+To set the file or string's character encoding explicitly, use the constructor's second argument, `$encoding`. This is useful if you know the file or string differs from your application's encoding. An encoding must be a valid [character encoding](http://php.net/manual/en/function.mb-list-encodings.php) from PHP's [Multi-byte string library](http://php.net/manual/en/ref.mbstring.php):
 
 ```php
 use Jstewmc\Chunker\Text;
@@ -115,7 +113,7 @@ $chunker = new Text('foo', 'UTF-8');
 
 ### Setting character encoding _implicitly_
 
-If an explicit character encoding is not passed to the constructer, the chunk's encoding is assumed to be your application's internal character encoding, the value returned by PHP's [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php):
+To let this library set the file or string's character coding implicitly, don't pass a character encoding to the constructer. The chunk's encoding is assumed to be your application's internal character encoding, the value returned by PHP's [`mb_internal_encoding()`](http://php.net/manual/en/function.mb-internal-encoding.php):
 
 ```php
 use Jstewmc\Chunker\Text;
@@ -125,9 +123,9 @@ $chunker = new Text('foo');
 
 ## Setting the chunk size
 
-Chunk size determines the memory consumption of each chunk, and this library attempts to provide sensible defaults: 8,192 *bytes* for files, and around 2,000 *characters* for strings (a maximum of around 8,000 bytes).
+The chunker's "chunk size" setting determines the memory consumption of each chunk. This library attempts to provide sensible defaults: 8,192 *bytes* for files and 2,000 *characters* for strings (a maximum of around 8,000 bytes).
 
-If you'd like to change the chunk size, you can use the constructor's third argument, `$size` (remember, it's *bytes* for files and *characters* for text):
+To change the chunk size, use the constructor's third argument, `$size` (remember, it's *bytes* for files and *characters* for text):
 
 ```php
 use Jstewmc\Chunker\{File, Text};
@@ -154,10 +152,10 @@ $chunker->getCurrentChunk();
 // returns "foo" (the first chunk is immediately available upon instantiation)
 
 $chunker->getNextChunk();      
-// returns false (advances the internal pointer)
+// returns false (advances the internal pointer and returns next chunk)
 
 $chunker->getPreviousChunk();  
-// returns "foo" (rewinds the internal pointer)
+// returns "foo" (rewinds the internal pointer and returns previous chunk)
 
 $chunker->getCurrentChunk();   
 // returns "foo"
@@ -170,9 +168,9 @@ These methods will usually be combined in a `while` loop (keep in mind, it's imp
 
 ```php
 while (false !== ($chunk = $chunker->current())) {
-
+	//
 	// do something with the $chunk...
-
+	//
 	// advance the pointer for the next iteration
 	$chunker->next();
 }
@@ -185,7 +183,7 @@ use Jstewmc\Chunker\Text;
 
 $chunker = new Text('foo bar baz', null, 3);
 
-$chunker->countChunks();  // returns 4 (total is always rounded up)
+$chunker->countChunks();  // returns 4 (the count is always rounded up)
 ```
 
 You can use the `hasChunk()` or `hasChunks()` to see whether or not the file or string has *exactly one* chunk or has *one or more chunks*, respectively:
@@ -211,7 +209,7 @@ use Jstewmc\Chunker\Text;
 
 $chunker = new Text('foo bar', null, 3);
 
-$chunker->countChunks();  // returns 3 (there are three, three-char chunks)
+$chunker->countChunks();  // returns 3 (there are three, three-character chunks)
 
 $chunker->hasPreviousChunk();  // returns false (the pointer is at zero)
 $chunker->hasNextChunk();      // returns true
@@ -246,7 +244,7 @@ $chunker->current();  // returns "foo"
 
 ## Contributing
 
-Contributions are welcome!
+Contributions are welcome! Here are the steps to get started:
 
 ```bash
 # Clone the repository (assuming you have Git installed).
