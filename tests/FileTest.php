@@ -40,6 +40,21 @@ class FileTest extends TestCase
         new File($this->emptyFile()->url(), self::ENCODING, 1);
     }
 
+    public function testGetEncodingReturnsString(): void
+    {
+        $this->assertEquals(self::ENCODING, $this->singleByteChunker()->getEncoding());
+    }
+
+    public function testGetIndexReturnsInt(): void
+    {
+        $this->assertEquals(0, $this->singleByteChunker()->getIndex());
+    }
+
+    public function testGetSizeReturnsInt(): void
+    {
+        $this->assertEquals(self::SIZE, $this->singleByteChunker()->getSize());
+    }
+
     public function testGetCurrentChunkReturnsFalseWhenContentIsEmpty(): void
     {
         $this->assertFalse($this->emptyChunker()->getCurrentChunk());
@@ -58,6 +73,27 @@ class FileTest extends TestCase
         $this->assertEquals(
             $this->multiByteChunk1(),
             $this->multiByteChunker()->getCurrentChunk()
+        );
+    }
+
+    public function testCurrentReturnsFalseWhenContentIsEmpty(): void
+    {
+        $this->assertFalse($this->emptyChunker()->current());
+    }
+
+    public function testCurrentReturnsStringWhenContentIsSingleByte(): void
+    {
+        $this->assertEquals(
+            $this->singleByteChunk1(),
+            $this->singleByteChunker()->current()
+        );
+    }
+
+    public function testCurrentReturnsStringWhenContentIsMultiByte(): void
+    {
+        $this->assertEquals(
+            $this->multiByteChunk1(),
+            $this->multiByteChunker()->current()
         );
     }
 
@@ -145,6 +181,29 @@ class FileTest extends TestCase
             $this->multiByteChunk1(),
             $chunker->getPreviousChunk()
         );
+    }
+
+    public function testPreviousReturnsFalseWhenPreviousChunkDoesNotExist(): void
+    {
+        $this->assertFalse($this->emptyChunker()->previous());
+    }
+
+    public function testPreviousReturnsStringWhenPreviousChunkIsSingleByte(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $chunker->next();
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->previous());
+    }
+
+    public function testPreviousReturnsFalseWhenPreviousChunkIsMultiByte(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $chunker->next();
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->previous());
     }
 
     public function testHasChunkReturnsFalseWhenFileIsEmpty(): void
