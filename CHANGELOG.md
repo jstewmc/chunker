@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.1] - 2021-10-22
 
 ### Added
 
-- Added tests to verify repeatability. That is, you can navigate to the end of the input, back to the beginning of the input, back to the end of the input, etc. Keep in mind, depending on the characters in the input, the chunks are only deterministic in one direction (i.e., the last chunk moving forward may not equal the first chunk moving backwards).
+- Added tests to verify repeatability. That is, you can navigate to the end of the input, back to the beginning, back to the end, so on and so forth. Keep in mind, the chunks are only deterministic in one direction (i.e., the _last chunk_ moving _forward_ may not equal the _first chunk_ moving _backwards_).
 
 ### Changed
 
