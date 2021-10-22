@@ -176,6 +176,8 @@ while (false !== ($chunk = $chunker->current())) {
 }
 ```
 
+The navigation methods are idempotent (i.e., calling `next()` at the end of the input does not update the internal chunk index), but chunks are only guaranteed to be deterministic in one direction (i.e., the _last chunk_ moving _forward_ may not equal the _first chunk_ moving _backwards_). 
+
 You can use the `countChunks()` method to count the chunks in a file or string:
 
 ```php
