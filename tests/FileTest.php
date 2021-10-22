@@ -133,6 +133,39 @@ class FileTest extends TestCase
         );
     }
 
+    public function testGetNextChunkIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $chunker->getNextChunk();
+        $chunker->getNextChunk();
+        $chunker->getNextChunk();
+
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+
+        $this->assertEquals($this->singleByteChunk4(), $chunker->current());
+    }
+
+    public function testGetNextChunkIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $chunker->getNextChunk();
+        $chunker->getNextChunk();
+        $chunker->getNextChunk();
+
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+
+        // When traveling in reverse, the chunks are different, because the
+        // library makes different adjustments.
+        $chunk = $this->threeByteCharacter();
+        $this->assertEquals($chunk, $chunker->current());
+    }
+
     public function testNextReturnsFalseWhenNextChunkDoesNotExist(): void
     {
         $this->assertFalse($this->emptyChunker()->next());
@@ -152,6 +185,39 @@ class FileTest extends TestCase
             $this->multiByteChunk2(),
             $this->multiByteChunker()->next()
         );
+    }
+
+    public function testNextIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $chunker->next();
+        $chunker->next();
+        $chunker->next();
+
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+
+        $this->assertEquals($this->singleByteChunk4(), $chunker->current());
+    }
+
+    public function testNextIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $chunker->next();
+        $chunker->next();
+        $chunker->next();
+
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+
+        // When traveling in reverse, the chunks are different, because the
+        // library makes different adjustments.
+        $chunk = $this->threeByteCharacter();
+        $this->assertEquals($chunk, $chunker->current());
     }
 
     public function testGetPreviousChunkReturnsFalseWhenPreviousChunkDoesNotExist(): void
@@ -183,6 +249,28 @@ class FileTest extends TestCase
         );
     }
 
+    public function testGetPreviousChunkIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+    }
+
+    public function testGetPreviousChunkIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
+    }
+
     public function testPreviousReturnsFalseWhenPreviousChunkDoesNotExist(): void
     {
         $this->assertFalse($this->emptyChunker()->previous());
@@ -204,6 +292,28 @@ class FileTest extends TestCase
         $chunker->next();
 
         $this->assertEquals($this->multiByteChunk1(), $chunker->previous());
+    }
+
+    public function testPreviousIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+    }
+
+    public function testPreviousIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
     }
 
     public function testHasChunkReturnsFalseWhenFileIsEmpty(): void
@@ -274,6 +384,84 @@ class FileTest extends TestCase
         $this->assertEquals(0, $chunker->getIndex());
     }
 
+    public function testChunkerIsRepeatableWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->singleByteChunk2(), $chunker->next());
+        $this->assertEquals($this->singleByteChunk3(), $chunker->next());
+        $this->assertEquals($this->singleByteChunk4(), $chunker->next());
+
+        $this->assertFalse($chunker->next());
+
+        $this->assertEquals($this->singleByteChunk3(), $chunker->previous());
+        $this->assertEquals($this->singleByteChunk2(), $chunker->previous());
+        $this->assertEquals($this->singleByteChunk1(), $chunker->previous());
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->singleByteChunk2(), $chunker->next());
+    }
+
+    public function testChunkerIsRepeatableWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->multiByteChunk2(), $chunker->next());
+        $this->assertEquals($this->multiByteChunk3(), $chunker->next());
+        $this->assertEquals($this->multiByteChunk4(), $chunker->next());
+
+        $this->assertFalse($chunker->next());
+
+        $this->assertEquals($this->multiByteChunk3(), $chunker->previous());
+        $this->assertEquals($this->multiByteChunk2(), $chunker->previous());
+        $this->assertEquals($this->multiByteChunk1(), $chunker->previous());
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->multiByteChunk2(), $chunker->next());
+    }
+
+    public function testMbStrcutMovesCutToIncludeCharacterWhenCutStartsMidMultiByteCharacter(): void
+    {
+        $this->assertEquals(
+            "{$this->twoByteCharacter()} b",
+            mb_strcut($this->multiByteString(), 5, 4, self::ENCODING)
+        );
+    }
+
+    public function testMbStrcutMovesCutToExcludeCharacterWhenCutEndsMidMultiByteCharacter(): void
+    {
+        $this->assertEquals(
+            'foo ',
+            mb_strcut($this->multiByteString(), 0, 5, self::ENCODING)
+        );
+    }
+
+    public function testMbSubstrDoesNotMoveCutWhenStringIsMalformed(): void
+    {
+        $actual = mb_strcut($this->malformedChunk(), 0);
+
+        // Use the `mb_scrub()` method to replace the malformed byte sequences
+        // with actual question mark characters. Although the malformed byte
+        // sequences are represented as question mark characters ("?") in
+        // output, they are, in fact, not true "?" characters and cannot be
+        // compared for equality.
+        $this->assertEquals('? bar ?', mb_scrub($actual));
+    }
+
     protected function emptyChunker(): File
     {
         return new File($this->emptyFile()->url());
@@ -318,6 +506,11 @@ class FileTest extends TestCase
         return 'quux cor';
     }
 
+    protected function singleByteChunk4(): string
+    {
+        return 'ge';
+    }
+
     protected function multiByteString(): string
     {
         return "foo {$this->twoByteCharacter()} bar " .
@@ -340,6 +533,11 @@ class FileTest extends TestCase
         return "az {$this->twoByteCharacter()} ";
     }
 
+    protected function multiByteChunk4(): string
+    {
+        return $this->threeByteCharacter();
+    }
+
     private function emptyFile(): vfsStreamFile
     {
         return vfsStream::newFile('example.txt')->at($this->root);
@@ -357,5 +555,16 @@ class FileTest extends TestCase
         return vfsStream::newFile('example.txt')
             ->withContent($this->multiByteString())
             ->at($this->root);
+    }
+
+    /**
+     * Returns a chunk with malformed byte sequences to emulate the return
+     * value of `file_get_contents()` when cutting multi-bute characters.
+     */
+    private function malformedChunk(): string
+    {
+        // Slice the multi-byte string one character into the two-byte character
+        // and two bytes into the three-byte character (e.g., "? bar ?").
+        return substr($this->multiByteString(), 5, 8);
     }
 }

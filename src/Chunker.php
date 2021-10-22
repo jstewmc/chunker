@@ -73,6 +73,10 @@ abstract class Chunker
      */
     public function getNextChunk()
     {
+        if (!$this->hasNextChunk()) {
+            return false;
+        }
+
         return $this->getChunk(++$this->index * $this->size);
     }
 
@@ -83,13 +87,11 @@ abstract class Chunker
      */
     public function getPreviousChunk()
     {
-        $offset = --$this->index * $this->size;
-
-        if ($offset < 0) {
+        if (!$this->hasPreviousChunk()) {
             return false;
         }
 
-        return $this->getChunk($offset);
+        return $this->getChunk(--$this->index * $this->size);
     }
 
     public function hasChunk(): bool
