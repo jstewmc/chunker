@@ -26,10 +26,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected const ENCODING = 'UTF-8';
 
-    // Don't include type here, or it'll throw an exception: `Error: Typed
-    // property must not be accessed before initialization`
-    protected $systemEncoding;
-
+    protected string $systemEncoding = '';
+    
 
     protected function setUp(): void
     {

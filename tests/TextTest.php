@@ -123,6 +123,34 @@ class TextTest extends TestCase
         );
     }
 
+    public function testGetNextChunkIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $chunker->getNextChunk();
+        $chunker->getNextChunk();
+
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+
+        $this->assertEquals($this->singleByteChunk3(), $chunker->current());
+    }
+
+    public function testGetNextChunkIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $chunker->getNextChunk();
+        $chunker->getNextChunk();
+
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+        $this->assertFalse($chunker->getNextChunk());
+
+        $this->assertEquals($this->multiByteChunk3(), $chunker->current());
+    }
+
     public function testNextReturnsFalseWhenNextChunkDoesNotExist(): void
     {
         $this->assertFalse($this->emptyChunker()->next());
@@ -142,6 +170,34 @@ class TextTest extends TestCase
             $this->multiByteChunk2(),
             $this->multiByteChunker()->next()
         );
+    }
+
+    public function testNextIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $chunker->next();
+        $chunker->next();
+
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+
+        $this->assertEquals($this->singleByteChunk3(), $chunker->current());
+    }
+
+    public function testNextIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $chunker->next();
+        $chunker->next();
+
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+        $this->assertFalse($chunker->next());
+
+        $this->assertEquals($this->multiByteChunk3(), $chunker->current());
     }
 
     public function testGetPreviousChunkReturnsFalseWhenPreviousChunkDoesNotExist(): void
@@ -167,6 +223,28 @@ class TextTest extends TestCase
         $this->assertEquals($this->multiByteChunk1(), $chunker->getPreviousChunk());
     }
 
+    public function testGetPreviousChunkIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+    }
+
+    public function testGetPreviousChunkIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+        $this->assertFalse($chunker->getPreviousChunk());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
+    }
+
     public function testPreviousReturnsFalseWhenPreviousChunkDoesNotExist(): void
     {
         $this->assertFalse($this->emptyChunker()->previous());
@@ -188,6 +266,28 @@ class TextTest extends TestCase
         $chunker->next();
 
         $this->assertEquals($this->multiByteChunk1(), $chunker->previous());
+    }
+
+    public function testPreviousIsIdempotentWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+    }
+
+    public function testPreviousIsIdempotentWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
     }
 
     public function testHasChunkReturnsFalseWhenTextIsEmpty(): void
@@ -255,6 +355,52 @@ class TextTest extends TestCase
         $chunker->reset();
 
         $this->assertEquals(0, $chunker->getIndex());
+    }
+
+    public function testChunkerIsRepeatableWhenSingleByteString(): void
+    {
+        $chunker = $this->singleByteChunker();
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->singleByteChunk2(), $chunker->next());
+        $this->assertEquals($this->singleByteChunk3(), $chunker->next());
+
+        $this->assertFalse($chunker->next());
+
+        $this->assertEquals($this->singleByteChunk2(), $chunker->previous());
+        $this->assertEquals($this->singleByteChunk1(), $chunker->previous());
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->singleByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->singleByteChunk2(), $chunker->next());
+    }
+
+    public function testChunkerIsRepeatableWhenMultiByteString(): void
+    {
+        $chunker = $this->multiByteChunker();
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->multiByteChunk2(), $chunker->next());
+        $this->assertEquals($this->multiByteChunk3(), $chunker->next());
+
+        $this->assertFalse($chunker->next());
+
+        $this->assertEquals($this->multiByteChunk2(), $chunker->previous());
+        $this->assertEquals($this->multiByteChunk1(), $chunker->previous());
+
+        $this->assertFalse($chunker->previous());
+
+        $this->assertEquals($this->multiByteChunk1(), $chunker->current());
+
+        $this->assertEquals($this->multiByteChunk2(), $chunker->next());
     }
 
     protected function emptyChunker(): Text

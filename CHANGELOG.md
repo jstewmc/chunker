@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Fixed
+### Added
 
-- Fix README's examples and improve the language a little bit.
+- Added tests to verify repeatability. That is, you can navigate to the end of the input, back to the beginning of the input, back to the end of the input, etc. Keep in mind, depending on the characters in the input, the chunks are only deterministic in one direction (i.e., the last chunk moving forward may not equal the first chunk moving backwards).
+
+### Changed
+
+- Updated navigation methods to be idempotent (i.e., calling `next()` at the end of the input multiple times does not change the current chunk or update the internal index).
+
+### Fixed
+
+- Fix README's examples and improved the language a little bit.
+- Fixed a bug where the chunker might return a string starting or ending with malformed byte sequences.
 
 ## [0.2.0] - 2021-10-12
 

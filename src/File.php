@@ -41,7 +41,7 @@ class File extends Chunker
             return false;
         }
 
-        return $this->getMultiByteChunk($singleByteChunk);
+        return $this->getMultiByteChunk($singleByteChunk, $offset);
     }
 
     /**
@@ -104,7 +104,7 @@ class File extends Chunker
             false,
             null,
             max(0, $offset - self::MAX_SIZE_CHARACTER),
-            $this->size + self::MAX_SIZE_CHARACTER
+            $this->size + (2 * self::MAX_SIZE_CHARACTER)
         );
     }
 
@@ -125,7 +125,7 @@ class File extends Chunker
      *     output: "ABC"
      *
      * If the intended chunk ends in the middle of a multi-byte character,
-     * `mb_strcut()` will move the cut to the right to exclude the character.
+     * `mb_strcut()` will move the cut to the right to include the character.
      *
      * For example:
      *
